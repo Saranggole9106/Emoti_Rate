@@ -31,7 +31,7 @@ Easily share product experiences and reviews across platforms.
 This project showcases how emotional intelligence can enhance traditional product review systems. By focusing on how users
 
 # Clone the repository
-git clone https://github.com/your-saranggole9106/Emoti_Rate.git
+git clone https://github.com/Saranggole9106/Emoti_Rate/tree/main
 
 # Open index.html in your browser
 Note: This is a front-end-only project. Future updates may include backend integration and authentication features.
