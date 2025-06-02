@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EmotiRate - Mood-Based Product Ratings</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <meta name="description" content="Rate products based on your mood and help others make better decisions">
+    <meta name="theme-color" content="#4a90e2">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fas fa-star"></i>
+            EmotiRate
+        </div>
+        <div class="nav-links">
+            <a href="#" class="active" data-section="home">Home</a>
+            <a href="#" data-section="products">Products</a>
+            <a href="#" data-section="dashboard">Dashboard</a>
+        </div>
+        <div class="nav-actions">
+            <button class="btn-icon" id="languageToggle" title="Change Language">
+                <i class="fas fa-globe"></i>
+            </button>
+            <button class="theme-toggle" aria-label="Toggle theme">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </nav>
+
+    <main>
+        <section id="home" class="section active">
+            <div class="hero">
+                <h1>Rate Products Based on Your Mood</h1>
+                <p>Share your emotional experience with products and help others make better decisions</p>
+                <div class="hero-actions">
+                    <button class="btn" onclick="showSection('products')">
+                        <i class="fas fa-shopping-bag"></i>
+                        Browse Products
+                    </button>
+                    <button class="btn btn-outline" onclick="requestNotificationPermission()">
+                        <i class="fas fa-bell"></i>
+                        Enable Notifications
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section id="products" class="section">
+            <div class="products-header">
+                <h2>Featured Products</h2>
+                <div class="products-actions">
+                    <div class="search-bar">
+                        <input type="text" id="searchInput" placeholder="Search products...">
+                        <i class="fas fa-search"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="products-grid" id="productsGrid">
+                <!-- Products will be dynamically added here -->
+            </div>
+        </section>
+
+        <section id="dashboard" class="section">
+            <div class="dashboard-header">
+                <h2>Dashboard</h2>
+                <button class="btn btn-danger" id="resetAllRatings">
+                    <i class="fas fa-trash"></i>
+                    Reset All Ratings
+                </button>
+            </div>
+            <div class="dashboard-grid">
+                <div class="stats-card">
+                    <h3>Total Ratings</h3>
+                    <p id="totalRatings">0</p>
+                </div>
+                <div class="stats-card">
+                    <h3>Average Rating</h3>
+                    <p id="averageRating">0.0</p>
+                </div>
+                <div class="stats-card">
+                    <h3>Most Common Mood</h3>
+                    <p id="mostCommonMood">-</p>
+                </div>
+            </div>
+            <div class="charts-container">
+                <div class="chart-card">
+                    <h3>Rating Distribution</h3>
+                    <canvas id="ratingChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>Mood Distribution</h3>
+                    <canvas id="moodChart"></canvas>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="ratingModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Rate this Product</h2>
+            <p>How do you feel about this product?</p>
+            <div class="emoji-container">
+                <button class="emoji-btn" data-mood="happy" data-tooltip="Happy">😊</button>
+                <button class="emoji-btn" data-mood="neutral" data-tooltip="Neutral">😐</button>
+                <button class="emoji-btn" data-mood="sad" data-tooltip="Sad">😢</button>
+                <button class="emoji-btn" data-mood="angry" data-tooltip="Angry">😠</button>
+                <button class="emoji-btn" data-mood="excited" data-tooltip="Excited">🤩</button>
+            </div>
+            <div class="rating-input">
+                <label for="username">Your Name:</label>
+                <input type="text" id="username" placeholder="Enter your name" required>
+            </div>
+            <div class="rating-input">
+                <label for="rating">Rating (1-5):</label>
+                <input type="number" id="rating" min="1" max="5" value="5">
+            </div>
+            <div class="comment-input">
+                <label for="comment">Your Review:</label>
+                <textarea id="comment" placeholder="Share your experience..."></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn" id="submitRating">
+                    <i class="fas fa-paper-plane"></i>
+                    Submit Rating
+                </button>
+                <button class="btn btn-outline" id="shareRating">
+                    <i class="fas fa-share-alt"></i>
+                    Share Rating
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
+
+<style>
+    .reviews-modal .modal-content {
+        max-width: 800px;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+
+    .reviews-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem 0;
+    }
+
+    .review-card {
+        background: var(--card-bg);
+        border-radius: 8px;
+        padding: 1rem;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .review-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+    }
+
+    .review-username {
+        font-weight: 600;
+        color: var(--primary);
+    }
+
+    .review-date {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .review-mood {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .review-rating {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .rating-value {
+        font-weight: 600;
+        color: var(--primary);
+    }
+
+    .review-comment {
+        color: var(--text);
+        line-height: 1.5;
+    }
+
+    .no-reviews {
+        text-align: center;
+        color: var(--text-secondary);
+        padding: 2rem;
+    }
+
+    .product-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    .btn-outline {
+        background: transparent;
+        border: 2px solid var(--primary);
+        color: var(--primary);
+    }
+
+    .btn-outline:hover {
+        background: var(--primary);
+        color: white;
+    }
+
+    [data-theme="light"] .btn-outline {
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+
+    [data-theme="light"] .btn-outline:hover {
+        background: var(--primary);
+        color: white;
+    }
+
+    .section {
+        display: none;
+    }
+
+    .section.active {
+        display: block;
+    }
+
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .btn-danger {
+        background-color: #e74c3c;
+        color: white;
+        border: none;
+    }
+
+    .btn-danger:hover {
+        background-color: #c0392b;
+    }
+
+    .btn-danger i {
+        margin-right: 0.5rem;
+    }
+
+    /* Responsive Design Styles */
+    @media screen and (max-width: 768px) {
+        .navbar {
+            padding: 1rem;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .nav-links {
+            width: 100%;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .nav-actions {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .hero {
+            padding: 2rem 1rem;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 2rem;
+        }
+
+        .hero-actions {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .products-header {
+            flex-direction: column;
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        .products-grid {
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            padding: 1rem;
+            gap: 1rem;
+        }
+
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        .charts-container {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        .modal-content {
+            width: 95%;
+            margin: 1rem;
+            padding: 1rem;
+        }
+
+        .emoji-container {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .modal-actions {
+            flex-direction: column;
+            gap: 1rem;
+        }
+    }
+
+    @media screen and (max-width: 480px) {
+        .hero h1 {
+            font-size: 1.75rem;
+        }
+
+        .hero p {
+            font-size: 1rem;
+        }
+
+        .products-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .stats-card {
+            padding: 1rem;
+        }
+
+        .chart-card {
+            padding: 1rem;
+        }
+
+        .review-card {
+            padding: 0.75rem;
+        }
+
+        .rating-input, .comment-input {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .rating-input label, .comment-input label {
+            width: 100%;
+        }
+
+        .rating-input input, .comment-input textarea {
+            width: 100%;
+        }
+    }
+
+    /* Base responsive styles */
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        overflow-x: hidden;
+    }
+
+    img {
+        max-width: 100%;
+        height: auto;
+    }
+
+    .btn {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .search-bar {
+        width: 100%;
+    }
+
+    .search-bar input {
+        width: 100%;
+    }
+</style>
