@@ -1,4 +1,4 @@
-🎭 EmotiRate – Mood-Based Product Rating Platform
+# **🎭 EmotiRate – Mood-Based Product Rating Platform**
 
 EmotiRate is a modern web application that revolutionizes how users rate and review products by incorporating emotional context into feedback. Instead of traditional 1–5 star ratings, users select how they feel about a product — making reviews more expressive and human-centric.
 
